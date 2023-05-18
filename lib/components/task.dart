@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_game_course/data/task_dao.dart';
 
 import 'difficulty.dart';
 
 class Task extends StatefulWidget {
   final String name;
   final String photo;
-  final int dificult;
+  final int difficulty;
 
-  const Task(this.name, this.photo, this.dificult, {Key? key})
-      : super(key: key);
+  Task(this.name, this.photo, this.difficulty, {Key? key}) : super(key: key);
+
+  int nivel = 0;
 
   @override
   State<Task> createState() => _TaskState();
 }
 
 class _TaskState extends State<Task> {
-  int nivel = 0;
+  bool assetOrNetwork() {
+    if (widget.photo.contains('http')) {
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +57,15 @@ class _TaskState extends State<Task> {
                       height: 100,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          widget.photo,
-                          fit: BoxFit.cover,
-                        ),
+                        child: assetOrNetwork()
+                            ? Image.asset(
+                                widget.photo,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                widget.photo,
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                     Column(
@@ -69,7 +81,7 @@ class _TaskState extends State<Task> {
                                   overflow: TextOverflow.ellipsis),
                             )),
                         Difficulty(
-                          dificultyLevel: widget.dificult,
+                          dificultyLevel: widget.difficulty,
                         ),
                       ],
                     ),
@@ -77,9 +89,12 @@ class _TaskState extends State<Task> {
                       height: 64,
                       width: 64,
                       child: ElevatedButton(
+                        onLongPress: (){
+                          TaskDao().delete(widget.name);
+                        },
                           onPressed: () {
                             setState(() {
-                              nivel++;
+                              widget.nivel++;
                             });
                             //print(nivel);
                           },
@@ -107,8 +122,8 @@ class _TaskState extends State<Task> {
                       width: 200,
                       child: LinearProgressIndicator(
                         color: Colors.white,
-                        value: (widget.dificult > 0)
-                            ? (nivel / widget.dificult) / 10
+                        value: (widget.difficulty > 0)
+                            ? (widget.nivel / widget.difficulty) / 10
                             : 1,
                       ),
                     ),
@@ -116,7 +131,7 @@ class _TaskState extends State<Task> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Nivel: $nivel',
+                      'Nivel: ${widget.nivel}',
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
